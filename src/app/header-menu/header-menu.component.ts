@@ -42,6 +42,7 @@ export class HeaderMenuComponent implements OnInit {
 
   /** メニューの選択が変わったときのイベントハンドラ */
   onTabChanged(event: MatTabChangeEvent): void {
+    this.menuService.lastSelectedTabIndex = this.selectedTabIndex;
     this.router.navigate(this.menus[this.selectedTabIndex].link);
   }
 }
