@@ -1,3 +1,8 @@
 .header-toolbar {
     color: white;
 }
+.emphasis {
+    font-weight: bold;
+    font-size: large;
+    color: black;
+}

@@ -13,10 +13,10 @@ export class HeaderMenuComponent implements OnInit {
   private wideWindow: boolean = false;
   /** メニュー */
   menus : Menu[] = [
-    { link: ['/clients'], icon: 'school', title: '顧客管理' },
-    { link: ['/vouchers'], icon: 'filter_none', title: '受注伝票管理' },
-    { link: ['/items'], icon: 'local_florist', title: '受注アイテム管理' },
-    { link: ['/actions'], icon: 'grading', title: 'アクション履歴管理' }
+    { index: 0, link: ['/clients'], icon: 'school', title: '顧客管理' },
+    { index: 1, link: ['/vouchers'], icon: 'filter_none', title: '受注伝票管理' },
+    { index: 2, link: ['/items'], icon: 'local_florist', title: '受注アイテム管理' },
+    { index: 3, link: ['/actions'], icon: 'grading', title: 'アクション履歴管理' }
   ];
   selectedTabIndex: number = undefined;
 
@@ -30,7 +30,7 @@ export class HeaderMenuComponent implements OnInit {
   /** 初期化処理 */
   ngOnInit() {
     // 画面幅が広いかどうかを判定
-    const isWideWindow = ()=>(window.innerWidth>660);
+    const isWideWindow = ()=>(window.innerWidth>710);
     this.wideWindow = isWideWindow();
     window.onresize = (e) => {          // イニシャル以降の画面サイズ変更時にも計算
       this.ngZone.run(() => this.wideWindow = isWideWindow());
@@ -38,6 +38,8 @@ export class HeaderMenuComponent implements OnInit {
     // 最後に選択されていたタブメニューを選択状態にする
     if(this.menuService.lastSelectedTabIndex)
       this.selectedTabIndex = this.menuService.lastSelectedTabIndex;
+    else
+      this.selectedTabIndex = 0;
   }
 
   /** メニューの選択が変わったときのイベントハンドラ */
@@ -49,6 +51,8 @@ export class HeaderMenuComponent implements OnInit {
 
 /** メニューを表すクラス */
 class Menu {
+  /** メニューインデックス */
+  index: number;
   /** メニュー選択時のルータリンク先 */
   link: string[];
   /** Matアイコン */

@@ -6,37 +6,9 @@
   (selectedTabChange)="onTabChanged($event);">
   <mat-tab *ngFor="let menu of menus">
     <ng-template mat-tab-label>
-      <mat-icon>{{menu.icon}}</mat-icon>
-      <div *ngIf="wideWindow"> {{menu.title}}</div>
+        <mat-icon>{{menu.icon}}</mat-icon>
+        <div *ngIf="wideWindow"><span [class.emphasis]="menu.index==selectedTabIndex"> {{menu.title}}</span></div>
     </ng-template>
   </mat-tab>
-  <!--
-  <mat-tab>
-    <ng-template mat-tab-label>
-      <mat-icon aria-label="顧客">school</mat-icon>
-      <div *ngIf="wideWindow"> 顧客管理</div>
-    </ng-template>
-  </mat-tab>
-  <mat-tab>
-    <ng-template mat-tab-label>
-      <mat-icon aria-label="伝票">filter_none</mat-icon>
-      <div *ngIf="wideWindow"> 受注伝票管理</div>
-    </ng-template>
-  </mat-tab>
-  <mat-tab>
-    <ng-template mat-tab-label>
-      <mat-icon aria-label="アイテム">local_florist</mat-icon>
-      <div *ngIf="wideWindow"> 受注アイテム管理</div>
-    </ng-template>
-  </mat-tab>
-  <mat-tab>
-    <ng-template mat-tab-label>
-      <mat-icon aria-label="アクション">grading</mat-icon>
-      <div *ngIf="wideWindow"> アクション履歴</div>
-    </ng-template>
-  </mat-tab>
--->
 </mat-tab-group>
-<p>
-  <router-outlet></router-outlet>
-</p>
+<router-outlet></router-outlet>
