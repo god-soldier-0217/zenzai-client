@@ -14,13 +14,16 @@
     width: 100px;
 }
 .search-text-field {
-    width: 250px;
+    width: 275;
 }
 .search-text-short-field{
     width: 100px;
 }
 .search-text-middle-field{
     width: 150px;
+}
+.search-text-long-field{
+    width: 300px;
 }
 .align-right {
     text-align: end;

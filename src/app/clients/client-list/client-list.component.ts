@@ -2,8 +2,12 @@ import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Overlay } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
-import { MatSpinner, MatTableDataSource, MatSort } from '@angular/material';
-import { Client } from '../client';
+import { MatSpinner, MatTableDataSource, MatSort, MatSnackBar } from '@angular/material';
+import { Client, ClientSearch } from '../client';
+import { ClientService } from '../client.service';
+import { PrefectureService } from '../prefecture.service';
+import { ClientClassService } from '../client-class.service';
+import { Router } from '@angular/router';
 
 
 @Component({
@@ -16,7 +20,7 @@ export class ClientListComponent implements OnInit, AfterViewInit {
   /** パネルが開いているかどうかを示す(双方向バインディング) */
   panelOpenState: boolean = true;
   /** 検索条件 */
-  searchCondition: string = "検索条件だよー";
+  searchCondition: string = '';
   /** ローディングアニメ */
   overlayRef = this.overlay.create({
     hasBackdrop: true,
@@ -50,20 +54,46 @@ export class ClientListComponent implements OnInit, AfterViewInit {
   /** 表示データ */
   elementData: Client[] = [];
   /** データソース */
-  dataSource:  MatTableDataSource<Client> = new MatTableDataSource(this.elementData);
- 
+  dataSource: MatTableDataSource<Client> = new MatTableDataSource(this.elementData);
+
 
   /** コンストラクタ */
   constructor(
-    private overlay: Overlay
+    private overlay: Overlay,
+    private clientService: ClientService,
+    private prefectureService: PrefectureService,
+    private clientClassService: ClientClassService,
+    private router: Router,
+    private matSnackBar: MatSnackBar
   ) { }
+
   /** 初期化 */
-  ngOnInit() {
+  async ngOnInit() {
+    // サービスから検索条件を復元
+    this.searchPrefectureCtrl.setValue(this.clientService.clientSearch.prefecture);
+    this.searchClientClassCtrl.setValue(this.clientService.clientSearch.clientClass);
+    this.searchNameCtrl.setValue(this.clientService.clientSearch.name);
+    this.searchChargeCtrl.setValue(this.clientService.clientSearch.clientCharge);
+    this.searchPostalCodeCtrl.setValue(this.clientService.clientSearch.postalCode);
+    this.searchAddressCtrl.setValue(this.clientService.clientSearch.address);
+    this.searchTelCtrl.setValue(this.clientService.clientSearch.tel);
+    this.searchFaxCtrl.setValue(this.clientService.clientSearch.fax);
+
+    /* サーバーから都道府県と顧客種別の選択肢を取得 */
+    Promise.all([this.prefectureService.getPrefectures(), this.clientClassService.getClientClasses()])
+    .then(values=>{
+      this.searchPrefectures = values[0];
+      this.searchPrefectures.unshift('');
+      this.searchClientClasses = values[1];
+      this.searchClientClasses.unshift('');
+    }).catch(error => 
+      this.router.navigate(['/error'])
+    );
   }
 
   // [stasrt] ソートを可能にする
   // https://ja.coder.work/so/angular/523780
-  @ViewChild(MatSort, {static: true}) sort: MatSort;
+  @ViewChild(MatSort, { static: true }) sort: MatSort;
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
   }
@@ -72,27 +102,40 @@ export class ClientListComponent implements OnInit, AfterViewInit {
   // イベントハンドラ
   /** [検索]ボタンのイベントハンドラ */
   search() {
+    // 入力された検索条件からClientSearchオブジェクトを作成
+    let search: ClientSearch = ClientSearch.parse(
+      this.searchPrefectureCtrl, this.searchClientClassCtrl, this.searchNameCtrl, this.searchChargeCtrl,
+      this.searchPostalCodeCtrl, this.searchAddressCtrl, this.searchTelCtrl, this.searchFaxCtrl);
+    // 条件なしは何もしない(エラ〜メッセージ)
+    if(!search.validate()) {
+      let matSnackBarRef = this.matSnackBar.open("検索条件が指定されていません", "了解", { duration: 3000, });
+      return;
+    }
+    // 検索条件を表示
+    this.searchCondition = search.toString();
+    // 検索条件を保存 (検索実行時にclientService.getClients()のなかで実行される)
+    //this.clientService.clientSearch = search;
+
     // ローディング開始
     this.overlayRef.attach(new ComponentPortal(MatSpinner));
-    setTimeout(() => {
-      this.elementData = [
-        { id: 1, name: 'A高等学校', postalCode: '112-3456', address: '大阪府枚方市楠葉美咲1ー21ー10', tel: '072-850-7019', fax: '072-850-7091', prefecture: '大阪府', clientClass: '高校', email: 'ohyama@mmm-keio.net', remarks: '' },
-        { id: 2, name: 'B高等学校', postalCode: '112-3456', address: '大阪府枚方市楠葉美咲1ー21ー10', tel: '072-850-7019', fax: '072-850-7091', prefecture: '大阪府', clientClass: '高校', email: 'ohyama@mmm-keio.net', remarks: '' },
-        { id: 3, name: 'C高等学校', postalCode: '112-3456', address: '大阪府枚方市楠葉美咲1ー21ー10', tel: '072-850-7019', fax: '072-850-7091', prefecture: '大阪府', clientClass: '高校', email: 'ohyama@mmm-keio.net', remarks: '' },
-        { id: 4, name: 'D高等学校', postalCode: '112-3456', address: '大阪府枚方市楠葉美咲1ー21ー10', tel: '072-850-7019', fax: '072-850-7091', prefecture: '大阪府', clientClass: '高校', email: 'ohyama@mmm-keio.net', remarks: '' },
-      ];
-      this.dataSource.data = this.elementData;
-
-
+    // 検索実行(検索結果を表に表示、エラー発生時はエラーページへ遷移)
+    this.clientService.getClients(search)
+    .then(clients => {
+      this.elementData = clients;
+      this.dataSource.data = this.elementData;    
+    })
+    .catch(error => this.router.navigate(['/error']))
+    .finally(() => {
       // ローディング終了
       this.overlayRef.detach();
       // パネルを閉じる
       this.panelOpenState = false;
-    }, 3000);
-
+    });
   }
   /** 行の選択イベントハンドラ */
-  select(row: Client){
+  select(row: Client) {
     console.log(row);
   }
+ 
+  
 }

@@ -43,7 +43,7 @@
       <mat-form-field class="search-text-short-field">
         <input matInput placeholder="郵便番号" [formControl]="searchPostalCodeCtrl">
       </mat-form-field>
-      <mat-form-field class="search-text-field">
+      <mat-form-field class="search-text-long-field">
         <input matInput placeholder="住所" [formControl]="searchAddressCtrl">
       </mat-form-field>
       <mat-form-field class="search-text-middle-field">
@@ -109,4 +109,4 @@
   </ng-container>  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
   <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="select(row)" class="yubi"></tr>
 </table>
-<p *ngIf="elementData.length==0">データなし</p>
+<p *ngIf="elementData.length==0">　データなし</p>

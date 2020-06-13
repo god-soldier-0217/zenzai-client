@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
+import { ErrorComponent } from './error/error.component';
 
 const routes: Routes = [
   {
@@ -19,8 +20,12 @@ const routes: Routes = [
     loadChildren: './actions/actions.module#ActionsModule'
   },
   {
+    path: 'error',
+    component: ErrorComponent
+  },
+  {
     path: '',
-    redirectTo: '',
+    redirectTo: '/clients',
     pathMatch: 'full'
   }
 ];
